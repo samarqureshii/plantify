@@ -10,6 +10,7 @@ public class Plant {
     protected int waterLevel;
     protected boolean plantAlive;
     protected String plantInfo;
+    protected int rep;
     public static final NumberFormat percent = NumberFormat.getPercentInstance();
 
     public Plant(){
@@ -17,6 +18,7 @@ public class Plant {
         waterLevel = 100;
         plantAlive = true;
         plantInfo = "";
+        rep = 0;
     }
 
     public Plant(String n, String s, String g, int water){
@@ -26,6 +28,7 @@ public class Plant {
         waterLevel = water;
         plantAlive = true;
         plantInfo = "";     
+        rep = 0;
     }
 
     public boolean isAlive(){
@@ -81,7 +84,7 @@ public class Plant {
     }
 
     public String tendMenu(){
-        return "1. Water plant \n2. See/modify plant info \n3. Rename plant";
+        return "1. Water plant \n2. Modify plant info \n3. Rename plant";
     }
 
     public boolean equals(Plant plant1){ //checks if two plants are equal to one another
@@ -100,11 +103,13 @@ public class Plant {
 
         if(randomNumber(1,150) > 140){
             System.out.println(causes[randomNumber(0,2)]);
+            rep-=randomNumber(0,5);
             plantAlive = false;
         }
     }
 
     public void checkPlantNeglect(){
+        int change = randomNumber(1,2);
         String[] deathMess = {"You are certainly an awful plant parent!", 
                                 "" + genus + " type plants seem quite the challenge for you!", 
                                 "Do you even deserve to care for " + genus + " type plants anymore?",
@@ -114,7 +119,9 @@ public class Plant {
         }
 
         else if(waterLevel <= 10 && plantAlive){
-            System.out.println("\n" + name + " (" + genus + " " + species + ") died from underwatering, and has been removed from your collection!\n" + deathMess[randomNumber(0,3)]);
+            System.out.println("\n" + name + " (" + genus + " " + species + ") died from underwatering, and has been removed from your collection!\n" 
+            + deathMess[randomNumber(0,3)] + "\n-" + change + " repuation.");
+            rep-=change;
             plantAlive = false;
         }
 
@@ -123,7 +130,9 @@ public class Plant {
         }
 
         else if(waterLevel >= 100 && plantAlive){
-            System.out.println("\n" + name + " (" + genus + " " + species + ") died from overwatering, and has been removed from your collection!\n" + deathMess[randomNumber(0,3)]);
+            System.out.println("\n" + name + " (" + genus + " " + species + ") died from overwatering, and has been removed from your collection!\n" 
+            + deathMess[randomNumber(0,3)] + "\n-" + change + " repuation.");
+            rep-=change;
             plantAlive = false;
         }
 
@@ -141,5 +150,9 @@ public class Plant {
 
     public boolean getRootRot(){
         return false;
+    }
+
+    public int getRep(){
+        return rep;
     }
 }

@@ -1,6 +1,10 @@
 package com.company.finalProject;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -10,21 +14,29 @@ public class ICS4U_FP {
     public static LinkedList myPlantList = new LinkedList();
     public static Random rand = new Random();
     public static final NumberFormat percent = NumberFormat.getPercentInstance();
-    public static int rep = 0, day = 0;
+    public static int rep = 0, day = 1;
+    public static boolean housePlantYes, treeYes, gardenYes;
+    public static ArrayList <LinkedList> friendList = new ArrayList();
+    public static String [] species = {"Cebu Blue", "Neon", "Manjula", "Marble Queen", "Golden", //pothos species
+                                    "Brasil", "Pink Princess", "Florida Beauty", "Micans", "Gloriosum" //philodendron species
+                                    , "Elastica", "Lyrata", "Benjamina", "Altissmia", "Audrey" //ficus species
+                                    , "Song of India", "Marginata", "Fragans", "Warneckii", "Cintho" //dracena species
+                                    , "Watermelon", "Pilea", "Caperata", "Obtusifolia", "Ginny" //peperomia species
+                                    
+                                    , "Yoshino Cherry", "Winter-flowering", "Fuji Cherry", "Prunus Kanzan", "Fugenzo" //blossom
+                                    , "Albicaulis", "Eastern white", "Ponderosa", "Jack", "Red" //pine
+                                    , "Weeping", "White", "Peachleaf", "Salix", "Scouler's" //willow
+                                    , "Sugar", "Silver", "Douglas", "Hedge", "Red", "Norway", "Manitoba" //maple species
+
+                                    , "Eggplant", "Potatoe", "Tomatoe" //solcanaceae 
+                                    , "Cabbage", "Watercress", "Turnip", "Radish", "Kale" //brassicaceae
+                                    , "Garlic", "Asparagus", "Shallot", "Leek", "Chive" //liliaceae
+                                    , "Pumpkin", "Squash", "Cucumber", "Melon", "Zucchini" //cucurbitaceae
+                                    , "Corn", "Rice", "Barley", "Millet", "Oat"}; //poacaeae
     public static void main(String[]args){
         boolean flag = true;
 
-        //display all instructions and how to "play"
-        //package A, B, C
-        //which package would you like?
-
-        String numPlants = "";
-        do{ 
-            System.out.println("\nHow many plants would you like to initially generate? Note that not all of them will be healthy.");
-            numPlants = input.nextLine();
-        }while(invalidInt(numPlants));
-
-        generatePlants(Integer.parseInt(numPlants));
+        introMessage();
 
         while(flag){
             String option = "";
@@ -37,11 +49,12 @@ public class ICS4U_FP {
                     "\n->4. Buy new plant" +
                     "\n->5. Sell plant" + 
                     "\n->6. Log into Planstagram" +
+                    "\n->7. Abandon all plants" + 
                     "\nCurrent amount of reputation: " + rep + 
                     "\n\nChoice: ");
                     option = input.nextLine();
             } while(!option.equals("1") && !option.equals("2") && !option.equals("3") && !option.equals("4") 
-                & !option.equals("5") && !option.equals("6"));
+                & !option.equals("5") && !option.equals("6") && !option.equals("7"));
 
             if(option.equals("1")){ //user chooses to tend to a plant
                 //show user list of options
@@ -51,17 +64,24 @@ public class ICS4U_FP {
                     "\n\nBefore you select an option, hit enter to see a list of plants that you can choose to tend to.");
                     input.nextLine();
 
-                    System.out.println(line(100) + "\n\n" + myPlantList.toString()); 
+                    System.out.println(line(100) + "\n\n->>Current plant inventory:\n\n" + myPlantList.toString()); 
 
                     if(!myPlantList.isEmpty()){
-                        System.out.println("\nEnter the nickname of the plant you would like to tend to.");
-                        String plantName = input.nextLine();
-                        Plant plantToTend = myPlantList.searchByName(plantName);
+                        Plant plantToTend = null;
+                        do{
+                            System.out.println("\n->Enter the nickname of the plant you would like to tend to.");
+                            String plantName = input.nextLine();
+                            plantToTend = myPlantList.searchByName(plantName);
 
-                        if(plantToTend != null){
-                            String op = "";
+                            if(plantToTend == null){
+                                System.out.println("\nLooks like " + plantName + " is not one of the plants you currently own!");
+                            }
+                
+                        }while(plantToTend==null);
+
+                        String op = "";
                             do{
-                                System.out.println("\nAwesome. What would you like to do with " + plantName + "?");
+                                System.out.println("\nAwesome. What would you like to do with " + plantToTend.getName() + "?");
                                 System.out.println(plantToTend.tendMenu());
                                 System.out.print("Choice: ");
                                 op = input.nextLine();
@@ -69,10 +89,12 @@ public class ICS4U_FP {
                             } while(!op.equals("1") && !op.equals("2") && !op.equals("3") && !op.equals("4")); //does not equal 1 2 3 4
                             
                             if(op.equals("1")){ //water the plant
+                                int change = randomNumber(1,10);
                                 plantToTend.setWaterLevel(plantToTend.getWaterLevel() + randomNumber(5,40));
                                 System.out.println("\nNicely done! " + plantToTend.getName() + " (" + plantToTend.getSpecies() 
                                 + " " + plantToTend.getGenus() + ") has been successfully watered." +
-                                "\nNew water level: " + percent.format((double)plantToTend.getWaterLevel()/100));
+                                "\nNew water level: " + percent.format((double)plantToTend.getWaterLevel()/100) + "\n+" + change + " reputation.");
+                                rep+=change;
                             }
 
                             else if(op.equals("2")){ //see the plant info (starts off as null, user gets to write it)
@@ -88,6 +110,7 @@ public class ICS4U_FP {
                                 //search to ensure plant has not already been named that
                                 namePlant(plantToTend);
                                 System.out.println("\nPlant has been successfully renamed. An exquisite name choice indeed.");
+                                rep+=randomNumber(0,5);
                             }
 
                             else if(op.equals("4")){ //special to each type of Plant
@@ -109,23 +132,39 @@ public class ICS4U_FP {
                                     ((FruitVeg)plantToTend).collectFood();
                                 }
                             }
-                        }
+                        
+                    }
 
-                        else{ //if plant name is not in the inventory
-                            System.out.println("\nLooks like " + plantName + " is not one of the plants you currently own!");
-                        }
+                    else{
+                        System.out.println("\nYou do not currently own any plants!");
                     }
                     
             }
 
             else if(option.equals("2")){// file IO to see 2D array spreadsheet of plants
+                System.out.println("\n\n" + line(100) + "\n");
+                String dayNum = "";
 
+                do{
+                    System.out.println("\nWhich day would you like to see your plant collection from? " 
+                    + "\n\nYou can only see files from before day " + day + ".");
+                    dayNum = input.nextLine();
+                }while(invalidInt(dayNum) || dayNum == null);
+           
+                if(Integer.parseInt(dayNum) < day && Integer.parseInt(dayNum) > 0){
+                    readFile("day" + dayNum + ".txt");
+                }
+
+                else{
+                    System.out.println("\nLooks like you're trying to access a file from the future, or too far in the past. Unable to read file.");
+                }
             }
 
             else if(option.equals("3")){ //searching and sorting of plants 
                 System.out.println("\n" + line(100) + "\n\nGlad you've decided to keep your plants organized! \n\n" 
                 + "Hit enter to see a list of all the different ways you can view your plants.");
                 input.nextLine();
+                rep+=randomNumber(0,5);
 
                 String ssOpt = "";
                 do{
@@ -160,55 +199,244 @@ public class ICS4U_FP {
                 }
 
                 else if(ssOpt.equals("3")){ //sorts plants by water level
-
+                    System.out.println(myPlantList.sortByWaterLevel());
                 }
 
                 else if(ssOpt.equals("4")){ //sorts plants by genus (alphabetically)
-
-                }
+                    System.out.println(myPlantList.sortByGenus());
+                }   
 
             }
 
             else if(option.equals("4")){ //user wants to buy a new plant 
+                System.out.println("\n" + line(100) + "\n\nGlad you've decided to buy a new plant!"
+                + "\n\nOur fancy AI will now ask you a series of questions to help determine which type of plant is best for your lifestyle." +
+                "\n\nHit enter to begin the questionnaire.");
+                input.nextLine();
+
+                housePlantYes = false; 
+                treeYes = false; 
+                gardenYes = false;
+
+                pickingPlant();
+
+                if(!housePlantYes && !treeYes && !gardenYes){ //none of the conditions were met
+                    System.out.println("\nBased on your resposnes, you do not deserve to care for plants at all!\n\n" 
+                    + "It would be unethical to sell you a plant.");
+                }
+
+                else if(treeYes){
+                    int cost = randomNumber(1,5);
+                    System.out.println("\nYou are the perfect fit for a new tree." + 
+                    "\n\nThe tree for sale will cost you " + cost + " reputation. Hit enter to purchase.");
+                    input.nextLine();
+                    
+                    if(rep >= cost){
+                        generateTree();
+                        rep-=cost;
+                    }
+
+                    else{
+                        System.out.println("\nUh oh, looks like you can't purchase this plant! Work on building some reputation before looking for new plants.");
+                    }
+                    
+                }
+
+                else if(gardenYes){
+                    int cost = randomNumber(1,5);
+                    System.out.println("\nYou are the perfect fit for a new garden plant." + 
+                    "\n\nThe garden plant for sale will cost you " + cost + " reputation. Hit enter to purchase.");
+                    input.nextLine();
+                    
+                    if(rep >= cost){
+                        generateFruitVeg();
+                        rep-=cost;
+                    }
+
+                    else{
+                        System.out.println("\nUh oh, looks like you can't purchase this plant! Work on building some reputation before looking for new plants.");
+                    }
+                    
+                }
+
+                else if(housePlantYes){
+                    int cost = randomNumber(1,5);
+                    System.out.println("\nYou are the perfect fit for a new houseplant." + 
+                    "\n\nThe houseplant for sale will cost you " + cost + " reputation. Hit enter to purchase.");
+                    input.nextLine();
+                    
+                    if(rep >= cost){
+                        generateHousePlant();
+                        rep-=cost;
+                    }
+
+                    else{
+                        System.out.println("\nUh oh, looks like you can't purchase this plant! Work on building some reputation before looking for new plants.");
+                    }
+                    
+                }
 
             }
             
             else if(option.equals("5")){ //user wants to sell a plant 
+                System.out.println("\n" + line(100) + "\n\nSelling precious plants just for some reputation? How utterly pathetic...\n\n" 
+                + "Hit enter to see a list of plants you can sell.\n");
+                input.nextLine();
+                System.out.println(myPlantList.toString() + "\n\n" + line(100));
+
+                Plant plantToSell = null;
+                do{
+                    System.out.println("\n->Enter the nickname of the plant you would like to sell.");
+                    String plantName = input.nextLine();
+                    plantToSell = myPlantList.searchByName(plantName);
+
+                    if(plantToSell == null){
+                        System.out.println("\nHmmm. You do not currently own any plants named '" + plantName + "'.");
+                    }
+        
+                }while(plantToSell==null);
+                
+                int price = randomNumber(1,10);
+
+                System.out.println("\nYou will be selling " + 
+                plantToSell.getName() + " (" + plantToSell.getSpecies() + " " + plantToSell.getGenus() 
+                        + ") for " + price + " reputation."
+                        + "\n\nHit enter to proceed with the transaction.");
+                input.nextLine();
+                myPlantList.remove(plantToSell);
+                rep+=price;
+                System.out.println("\nPlant successfully sold. New reputation: " + rep);
 
             }
             
-            else if(option.equals("6")){ //user wants to log into virtual plant marketplace
+            else if(option.equals("6")){ //user wants to log into Planstagram
+                addToFriendList(randomNumber(4,8)); //adds 4-8 random friends everytime user logs in
+                boolean stay = true;
+                int actionCount = 0;
+                if(rep > 10){
+                    System.out.println("\n\n" + line(100) + 
+                    "\n\nWelcome to Planstagram, a virtual plant community where you can connect with others through the shared love of plants!" + 
+                    "\n\nThe more friends you have, the more reputation you can gain! However, some 'friends' can say nasty things and lower your reputation!" 
+                    + "\n\nHit enter to see a list of options you can chose from.\n");
+                    input.nextLine();
 
+                    while(stay){
+                        actionCount++;
+                        String op = "";
+
+                        do{
+                            System.out.println(line(50) 
+                                + "\n\n1. See the plant list of one of your friends " + 
+                                "\n2. Leave a comment on one of your friends' plants " + 
+                                "\n3. Connect with new friends" +
+                                "\n4. Unfriend someone" + 
+                                "\n5. Remove all friends from friend list" + 
+                                "\n6. Log out");
+                                op = input.nextLine();
+                        }while(!op.equals("1") && !op.equals("2") && !op.equals("3") && !op.equals("4")
+                                && !op.equals("5") && !op.equals("6"));
+
+                        if(op.equals("1")){ //see the plant list of one of your friends
+                            String friend = "";
+                            do{ 
+                                System.out.println("\nEnter the friend # whose plants you would like to see.");
+                                friend = input.nextLine();
+                            }while(invalidInt(friend));
+
+                            seeFriendsPlants(Integer.parseInt(friend)-1);
+                        }
+
+                        else if(op.equals("2")){ //leave a comment on on of your friend's plants
+                            System.out.println("\n-->Below are the number of plants each of your friends own:\n");
+                            numOfFriendPlants();
+
+                            String friend = "";
+                            do{ 
+                                System.out.println("\nEnter the friend # whose plants you would like to comment on:");
+                                friend = input.nextLine();
+                            }while(invalidInt(friend));
+
+                            System.out.println("\n-->Friend's plant inventory: ");
+                            seeFriendsPlants(Integer.parseInt(friend)-1);
+
+                            System.out.println("\nWhat would you like to comment?");
+                            input.nextLine();
+
+                            int r = randomNumber(1,5);
+                            rep+=r;
+                            System.out.println("\nNicely done! +" + r + " reputation.");
+                        }
+
+                        else if(op.equals("3")){ //connect with a new friend
+                            System.out.println("\nLet's connect with some new friends! Hit enter to add some new plant buddies to your friend list.");
+                            input.nextLine();
+
+                            int newFriends = randomNumber(1,5);
+                            rep+=newFriends;
+                            addToFriendList(newFriends);
+                            System.out.println("\n" + newFriends + " new friends were made. +" + newFriends + " reputation.");
+                        
+                        }
+
+                        else if(op.equals("4")){ //user wants to unfriend someone
+                            String friendToRemove = "";
+                            do{ 
+                                System.out.println("\nEnter the friend # you would like to remove. Remember, you only have " + friendList.size() + " friends!");
+                                friendToRemove = input.nextLine();
+                            }while(invalidInt(friendToRemove));
+                        
+                            friendList.remove(Integer.parseInt(friendToRemove)-1);
+                            System.out.println("\nFriend successfully removed.");
+                        }
+
+                        else if(op.equals("5")){ //uses removes all friends from friend list
+                            friendList.clear();
+                            System.out.println("\nAll plant buddies removed from friend list.");
+                        }
+
+                        else if(op.equals("6")){ //user chooses to log out
+                            System.out.println("\nSee you next time!");
+                            stay = false;
+                        }
+
+                        if(actionCount == 4){
+                            System.out.println("\nYou've been on Planstagram for too long! We're logging you out.");
+                            stay = false;
+                        }
+                    }
+                }
+
+                else{
+                    System.out.println("\nYou have not gained enough reputation with your plants to access Planstagram." + 
+                    "\nCome back when you have more than 10 reputation.");
+                }
+            }
+            
+            if(option.equals("7")){
+                flag = false;
             }
             
             System.out.println("\nHit enter to continue.\n" + line(100));
             input.nextLine();
             myPlantList.dailyEvent(); //does a random daily event for every plant in the list
+            rep += myPlantList.getDailyRep();
             myPlantList.removeDeadPlants(); //removes any dead plants from the list
+            myPlantList.writeFile("" + day);
             day++;
+
+            if(myPlantList.isEmpty() && rep < 5){ //game over
+                flag = false;
+            }
         }
-    }
+
+        //goodbye message
+}
 
 
     public static void generateRandomPlant(LinkedList list){
         int sub = randomNumber(1, 3);
         int genus = randomNumber(1, 5);
-        String [] species = {"Cebu Blue", "Neon", "Manjula", "Marble Queen", "Golden", //pothos species
-                            "Brasil", "Pink Princess", "Florida Beauty", "Micans", "Gloriosum" //philodendron species
-                            , "Elastica", "Lyrata", "Benjamina", "Altissmia", "Audrey" //ficus species
-                            , "Song of India", "Marginata", "Fragans", "Warneckii", "Cintho" //dracena species
-                            , "Watermelon", "Pilea", "Caperata", "Obtusifolia", "Ginny" //peperomia species
-                            
-                            , "Yoshino Cherry", "Winter-flowering", "Fuji Cherry", "Prunus Kanzan", "Fugenzo" //blossom
-                            , "Albicaulis", "Eastern white", "Ponderosa", "Jack", "Red" //pine
-                            , "Weeping", "White", "Peachleaf", "Salix", "Scouler's" //willow
-                            , "Sugar", "Silver", "Douglas", "Hedge", "Red", "Norway", "Manitoba" //maple species
-                        
-                            , "Eggplant", "Potatoe", "Tomatoe" //solcanaceae 
-                            , "Cabbage", "Watercress", "Turnip", "Radish", "Kale" //brassicaceae
-                            , "Garlic", "Asparagus", "Shallot", "Leek", "Chive" //liliaceae
-                            , "Pumpkin", "Squash", "Cucumber", "Melon", "Zucchini" //cucurbitaceae
-                            , "Corn", "Rice", "Barley", "Millet", "Oat"}; //poacaeae
+
         
         if(sub == 1){ // will generate a Houseplant
             if(genus == 1){ //Pothos
@@ -275,6 +503,79 @@ public class ICS4U_FP {
         }
     }
 
+    public static void generateHousePlant(){
+        int genus = randomNumber(1, 5);
+
+        if(genus == 1){ //Pothos
+            myPlantList.addAtFront(new Houseplant("", species[randomNumber(0, 4)], "Pothos", randomNumber(0, 100)));
+        }
+
+        else if(genus == 2){ //philodendron
+            myPlantList.addAtFront(new Houseplant("", species[randomNumber(5, 9)], "Philodendron", randomNumber(0, 100)));
+        }
+
+        else if(genus == 3){// ficus
+            myPlantList.addAtFront(new Houseplant("", species[randomNumber(10, 14)], "Ficus", randomNumber(0, 100)));
+        }
+
+        else if(genus == 4){// dracena
+            myPlantList.addAtFront(new Houseplant("", species[randomNumber(15, 19)], "Dracena", randomNumber(0, 100)));
+        }
+
+        else if(genus == 5){ //peperomia
+            myPlantList.addAtFront(new Houseplant("", species[randomNumber(20, 24)], "Peperomia", randomNumber(0, 100)));
+        }
+    
+        nameNewPlants();
+    }
+
+    public static void generateTree(){
+        int genus = randomNumber(1,5);
+        
+        if(genus == 1){ //blossom
+            myPlantList.addAtFront(new Tree("", species[randomNumber(25, 29)], "Blossom", randomNumber(0, 100)));
+        }
+
+        else if(genus == 2){ //pine
+            myPlantList.addAtFront(new Tree("", species[randomNumber(30, 34)], "Pine", randomNumber(0, 100)));
+        }
+
+        else if(genus == 3){ //willow
+            myPlantList.addAtFront(new Tree("", species[randomNumber(35, 39)], "Willow", randomNumber(0, 100)));
+        }
+
+        else if(genus == 4 || genus == 5){ //maple
+            myPlantList.addAtFront(new Tree("", species[randomNumber(40, 46)], "Maple", randomNumber(0, 100)));
+        }
+
+        nameNewPlants();
+    }
+    
+    public static void generateFruitVeg(){
+        int genus = randomNumber(1,5);
+
+        if(genus == 1){ //solcanaceae 
+            myPlantList.addAtFront(new FruitVeg("", species[randomNumber(47, 49)], "Solcanaceae", randomNumber(0, 100)));
+        }
+
+        if(genus == 2){ //brassicaceae
+            myPlantList.addAtFront(new FruitVeg("", species[randomNumber(50, 54)], "Brassicaceae", randomNumber(0, 100)));
+        }
+
+        if(genus == 3){ ////liliaceae
+            myPlantList.addAtFront(new FruitVeg("", species[randomNumber(55, 59)], "Liliaceae", randomNumber(0, 100)));
+        }
+
+        if(genus == 4){ //cucurbitaceae
+            myPlantList.addAtFront(new FruitVeg("", species[randomNumber(60, 64)], "Cucurbitaceae", randomNumber(0, 100)));
+        }
+
+        else if(genus == 5){ //poacaeae
+            myPlantList.addAtFront(new FruitVeg("", species[randomNumber(65, 69)], "Poacaeae", randomNumber(0, 100)));
+        }
+    
+        nameNewPlants();
+    }
     /*
     *Random number generator method
     *Pre: Takes in the minimum and maximum constraints
@@ -293,33 +594,34 @@ public class ICS4U_FP {
 
         else{
             generateRandomPlant(myPlantList);
-            System.out.println("What would you like to name your new " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() + "?");
-            String newName = input.nextLine();
-
-            while(myPlantList.doesNameExist(newName)){
-                System.out.println("\nHm. It seems that you've already named another plant " + newName + ". \nTry a different name:");
-                newName = input.nextLine();
-            }
-
-            myPlantList.getFront().setName(newName);
+            nameNewPlants();
             return generatePlants(n-1);
         }
         
     }
 
-    public static int generatePlants(int n, LinkedList list){ //where n is the number of plants
-        int i = 0;
+    //method for generating and adding plants to any linked list 
+    public static LinkedList generatePlants(int n, LinkedList list){ //where n is the number of plants
+        for(int i = 0; i<n; i++){
+            generateRandomPlant(list);
+        }
 
+        return list;
+    }
+
+    public static int addToFriendList(int n){ //where n is the number of lists
+        int i = 0;
         if(i == n){
             return 0;
         }
 
         else{
-            generateRandomPlant(list);
-            return generatePlants(n, list);
+            friendList.add(generatePlants(randomNumber(2,8), new LinkedList()));
+            return addToFriendList(n-1);
         }
+        
     }
-
+    
     public static boolean invalidInt(String input){
         try{
             Integer.parseInt(input);
@@ -366,4 +668,241 @@ public class ICS4U_FP {
 
         }while(!nullFlag);
     }
+
+    public static void nameNewPlants(){
+        System.out.println("What would you like to name your new " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() + "?");
+            String newName = input.nextLine();
+
+            while(myPlantList.doesNameExist(newName)){
+                System.out.println("\nHm. It seems that you've already named another plant " + newName + ". \nTry a different name:");
+                newName = input.nextLine();
+            }
+
+            myPlantList.getFront().setName(newName);
+    }
+
+    public static void pickingPlant(){
+        String q = "";
+
+        do{ //question 1
+            System.out.println("\nHow many windows do you have in your house?" + 
+                                "\n1. Lots. I like to bring the outside inside, as I am a CS student and rarely leave my house." + 
+                                "\n2. A moderate amount." + 
+                                "\n3. Maybe one or two. I enjoy living in a dungeon.");
+            q = input.nextLine();
+        }while( !q.equals("1") && !q.equals("2") && !q.equals("3"));
+
+        if(q.equals("1")){
+            housePlantYes = true;
+        }
+
+        else if(q.equals("1")){
+            housePlantYes = true;
+        }
+
+        else if(q.equals("3")){
+            housePlantYes = false;
+        }
+
+        q = "";
+        do{ //question 2
+            System.out.println("\nAre you looking to eat more sustainable food?" + 
+                                "\n1. Of course." + 
+                                "\n2. It's not really on my mind, but sure." + 
+                                "\n3. Absolutely not. I take pride in contributing to climate change.");
+            q = input.nextLine();
+        }while(!q.equals("1") && !q.equals("2") && !q.equals("3"));
+
+        if(q.equals("1")){
+            gardenYes = true;
+        }
+
+        else if(q.equals("2")){
+            gardenYes = true;
+        }
+
+        else if(q.equals("3")){
+            housePlantYes = false;
+        }
+
+        q="";
+
+        do{ //question 3
+            System.out.println("\nHow lazy are you?" + 
+                                "\n1. Yes." + 
+                                "\n2. I have my days..." + 
+                                "\n3. I consider myself to be productive all the time.");
+            q = input.nextLine();
+        }while(!q.equals("1") && !q.equals("2") && !q.equals("3"));
+
+        if(q.equals("1")){
+            housePlantYes = false;
+            treeYes = true;
+        }
+
+        else if(q.equals("2")){
+            gardenYes = true;
+        }
+
+        else if(q.equals("3")){
+            housePlantYes = true;
+        }
+
+        q = "";
+        do{ //question 4
+            System.out.println("\nWhich direction does your house face?" + 
+                                "\n1. North" + 
+                                "\n2. South" + 
+                                "\n3. East or West");
+            q = input.nextLine();
+        }while(!q.equals("1") && !q.equals("2") && !q.equals("3"));
+
+        if(q.equals("1")){
+            housePlantYes = false;
+            treeYes = true;
+        }
+
+        else if(q.equals("2")){
+            gardenYes = true;
+        }
+
+        else if(q.equals("3")){
+            housePlantYes = true;
+        }
+
+        q = "";
+        do{ //question 5
+            System.out.println("\nWhat season is it?" + 
+                                "\n1. Winter" + 
+                                "\n2. Spring" + 
+                                "\n3. Samar"
+                                +"\n4. Fall");
+            q = input.nextLine();
+        }while(!q.equals("1") && !q.equals("2") && !q.equals("3") && !q.equals("4"));
+
+        if(q.equals("1")){
+            gardenYes = false;
+            housePlantYes = true;
+        }
+
+        else if(q.equals("2")){
+            gardenYes = true;
+        }
+
+        else if(q.equals("3")){
+            gardenYes = true;
+        }
+        else if(q.equals("4")){
+            gardenYes = false;
+            treeYes = true;
+        }
+    }
+
+    public static void readFile(String fileName){
+        try{
+            BufferedReader br = new BufferedReader(
+            new FileReader(fileName));
+            
+            String s;
+            while((s = br.readLine()) != null){
+                    System.out.println(s);
+            }
+
+            br.close();
+
+        } catch(IOException ex){ //catches failure in reading the file (e.g if it does not exist)
+            System.out.println("\nHmm. There seems to be a problem with reading from " + fileName + ".");
+            System.out.println("IOException: " + ex.getMessage());
+            return;
+        } 
+    }
+
+    public static void introMessage(){
+        System.out.println("\nHit enter after every line to continue.\n\n\n" 
+        + "While on vacation in Madagascar, you won a lottery!");
+        input.nextLine();
+        System.out.println("What kind of lottery, you ask?");
+        input.nextLine();
+        System.out.println("Only every plant lover's dream!");
+        input.nextLine();
+        System.out.println("That's right, you've won a TON of plants!\n\n" + 
+        "To claim your prize, hit enter to see a list of surprise packages you can choose from!");
+        input.nextLine();
+        System.out.println(line(24) 
+        + "\n|           |           |"
+        + "\n| Surprise  | Surprise  |" 
+        + "\n| Package A | Package B |" 
+        // + "\n|           |           |"
+        + "\n" + line (24) 
+        + "\n|           |           |"
+        + "\n| Surprise  | Surprise  |" 
+        + "\n| Package C | Package D |" 
+        // + "\n|           |           |"
+        + "\n" + line (24));
+
+        String packge = "";
+        do{
+            System.out.println("\n\nChoose from any of the four packages, A, B, C or D.");
+            packge = input.nextLine();
+
+        }while(!packge.equalsIgnoreCase("A") && !packge.equalsIgnoreCase("B") 
+        && !packge.equalsIgnoreCase("C") && !packge.equalsIgnoreCase("D"));
+
+        if(packge.equalsIgnoreCase("A")){
+            int A = randomNumber(1,3);
+            System.out.println("\nPackage A chosen. You won " + A + " plant(s)!");
+            generatePlants(A);
+        }
+
+        else if(packge.equalsIgnoreCase("B")){
+            int B = randomNumber(10,12);
+            System.out.println("\nPackage B chosen. You won " + B + " plants!");
+            generatePlants(B);
+        }
+
+        else if(packge.equalsIgnoreCase("C")){
+            int C = randomNumber(7,9);
+            System.out.println("\nPackage C chosen. You won " + C + " plants!");
+            generatePlants(C);
+        }
+
+        else if(packge.equalsIgnoreCase("D")){
+            int D = randomNumber(4,6);
+            System.out.println("\nPackage D chosen. You won " + D + " plants!");
+            generatePlants(D);
+        }
+
+        System.out.println("\nWhen you do things like take care of your plants or organize, them, you can gain reputation. [Hit enter for more]");
+        input.nextLine();
+        System.out.println("Reputation can be utilized in the the Planstagram interface, or to buy new plants. [Hit enter for more]");
+        input.nextLine();
+        System.out.println("However, reputation can be lost when you neglect your plants. [Hit enter for more]");
+        input.nextLine();
+        System.out.println("If you lose all your plants and have less than 5 reputation, you will be no longer be able to obtain and care for new plants. \n[Hit enter for more]");
+        input.nextLine();
+        System.out.println("Goodluck, and remember to take good care of your plants!");
+    
+    }
+
+    public static void seeFriendsPlants(int index){ //where index is the index number in the list
+        if(friendList.size() <= 0){
+            System.out.println("\nYou currently have no plants!");
+            return;
+        }
+        
+        System.out.println("\n->>Current plant inventory of friend " + (index + 1) + ": \n\n" + friendList.get(index).toString());
+    }
+
+    public static void numOfFriendPlants(){
+        if(friendList.size() <= 0){
+            System.out.println("\nYou currently have no plants!");
+            return;
+        }
+
+        for(int i = 0; i<friendList.size(); i++){
+            System.out.println("\nFriend " + (i + 1) + " has " + friendList.get(i).getSize() + " plants.");
+        }
+    }
 }
+
+

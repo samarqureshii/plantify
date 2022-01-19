@@ -25,6 +25,7 @@ public class Tree extends Plant{
 
     public boolean collectFoliage(){
         int chance = randomNumber(1, 10);
+        int change = randomNumber(1,5);
         boolean success = false;
 
         System.out.println("Let's try collect some foliage off this " + genus + " " + species + "!" 
@@ -33,7 +34,8 @@ public class Tree extends Plant{
 
         if(chance <= 6){ //collection is successful
             System.out.println("After " + randomNumber(4,16) + " minutes, you were able to gain the courage to collect a small sample from the tree!" 
-            + "\n\nThis will be a valuable addition to your scrapbook.");
+            + "\n\nThis will be a valuable addition to your scrapbook.\n+" + change + " reputation");
+            rep+=change;
             success = true;
         }
 
@@ -45,6 +47,7 @@ public class Tree extends Plant{
 
     }
 
+    @Override
     public void dailyEvent(){
         super.dailyEvent();
         if(randomNumber(1,50)%5==0 && !cold){

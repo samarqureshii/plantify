@@ -22,6 +22,7 @@ public class FruitVeg extends Plant{
 
     public boolean collectFood(){
         int chance = randomNumber(1, 10);
+        int change = randomNumber(1,5);
         boolean success = false;
 
         System.out.println("Let's try collect some " + species + "(s)!" 
@@ -30,7 +31,8 @@ public class FruitVeg extends Plant{
 
         if(chance <= 7){ //collection is successful
             System.out.println("You were able to find and collect " + super.randomNumber(1,4) + " " + species + "(s)." 
-            + "\n\nI guess we're having " + species + " pasta for dinner tonight!");
+            + "\n\nI guess we're having " + species + " pasta for dinner tonight!\n+" + change + " reputation.");
+            rep+=change;
             success = true;
         }
 
@@ -42,9 +44,12 @@ public class FruitVeg extends Plant{
 
     }
 
+    @Override
     public void dailyEvent(){
         String []animals = {"squirrel", "fox", "raccoon", "fox", "rabbit"};
         super.dailyEvent();
+        int change = randomNumber(1,3);
+        
         if(randomNumber(1,50)% 4 == 0 && !eatenByAnimal){
             eatenByAnimal = true;
             plantInfo+= "\nThis plant is currently suffering from moderate damage as a result of being partially eaten by a " 
@@ -52,7 +57,9 @@ public class FruitVeg extends Plant{
         }
 
         if(plantAlive && eatenByAnimal && randomNumber(1,20) % 3 == 0){
-            System.out.println("\nAfter another deadly " + animals[randomNumber(0,4)] + " attack, " + name + " succumbed to its injuries and died.");
+            System.out.println("\nAfter another deadly " + animals[randomNumber(0,4)] + " attack, " + name + " succumbed to its injuries and died." + 
+            "\n-" + change + " reputation.");
+            rep-=change;
             plantAlive = false;
         }
 
