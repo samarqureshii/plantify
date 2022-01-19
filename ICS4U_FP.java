@@ -14,7 +14,7 @@ public class ICS4U_FP {
     public static LinkedList myPlantList = new LinkedList();
     public static Random rand = new Random();
     public static final NumberFormat percent = NumberFormat.getPercentInstance();
-    public static int rep = 0, day = 1;
+    public static int rep = 1000, day = 1;
     public static boolean housePlantYes, treeYes, gardenYes;
     public static ArrayList <LinkedList> friendList = new ArrayList();
     public static String [] species = {"Cebu Blue", "Neon", "Manjula", "Marble Queen", "Golden", //pothos species
@@ -36,7 +36,7 @@ public class ICS4U_FP {
     public static void main(String[]args){
         boolean flag = true;
 
-        introMessage();
+        //introMessage();
 
         while(flag){
             String option = "";
@@ -187,7 +187,7 @@ public class ICS4U_FP {
 
                         System.out.println("\nEnter maximum water level % to look for:");
                         max = input.nextLine();
-                    }while(invalidInt(min) && invalidInt(max));
+                    }while(invalidInt(min) || invalidInt(max));
                 
                     System.out.println(myPlantList.searchByWaterLevel(Integer.parseInt(min), Integer.parseInt(max)));
                 }
@@ -282,31 +282,37 @@ public class ICS4U_FP {
                 System.out.println("\n" + line(100) + "\n\nSelling precious plants just for some reputation? How utterly pathetic...\n\n" 
                 + "Hit enter to see a list of plants you can sell.\n");
                 input.nextLine();
-                System.out.println(myPlantList.toString() + "\n\n" + line(100));
-
-                Plant plantToSell = null;
-                do{
-                    System.out.println("\n->Enter the nickname of the plant you would like to sell.");
-                    String plantName = input.nextLine();
-                    plantToSell = myPlantList.searchByName(plantName);
-
-                    if(plantToSell == null){
-                        System.out.println("\nHmmm. You do not currently own any plants named '" + plantName + "'.");
-                    }
-        
-                }while(plantToSell==null);
                 
-                int price = randomNumber(1,10);
+                if(!myPlantList.isEmpty()){
+                    System.out.println(myPlantList.toString() + "\n\n" + line(100));
 
-                System.out.println("\nYou will be selling " + 
-                plantToSell.getName() + " (" + plantToSell.getSpecies() + " " + plantToSell.getGenus() 
-                        + ") for " + price + " reputation."
-                        + "\n\nHit enter to proceed with the transaction.");
-                input.nextLine();
-                myPlantList.remove(plantToSell);
-                rep+=price;
-                System.out.println("\nPlant successfully sold. New reputation: " + rep);
+                    Plant plantToSell = null;
+                    do{
+                        System.out.println("\n->Enter the nickname of the plant you would like to sell.");
+                        String plantName = input.nextLine();
+                        plantToSell = myPlantList.searchByName(plantName);
 
+                        if(plantToSell == null){
+                            System.out.println("\nHmmm. You do not currently own any plants named '" + plantName + "'.");
+                        }
+            
+                    }while(plantToSell==null);
+                    
+                    int price = randomNumber(1,10);
+
+                    System.out.println("\nYou will be selling " + 
+                    plantToSell.getName() + " (" + plantToSell.getSpecies() + " " + plantToSell.getGenus() 
+                            + ") for " + price + " reputation."
+                            + "\n\nHit enter to proceed with the transaction.");
+                    input.nextLine();
+                    myPlantList.remove(plantToSell);
+                    rep+=price;
+                    System.out.println("\nPlant successfully sold. New reputation: " + rep);
+                }
+
+                else{
+                    System.out.println("\nYou do not own any plants that you can sell!");
+                }
             }
             
             else if(option.equals("6")){ //user wants to log into Planstagram
@@ -339,9 +345,9 @@ public class ICS4U_FP {
                         if(op.equals("1")){ //see the plant list of one of your friends
                             String friend = "";
                             do{ 
-                                System.out.println("\nEnter the friend # whose plants you would like to see.");
+                                System.out.println("\nEnter the friend # whose plants you would like to see. You only have " + friendList.size() + " friends at the moment.");
                                 friend = input.nextLine();
-                            }while(invalidInt(friend));
+                            }while(invalidInt(friend) || Integer.parseInt(friend)-1 > friendList.size() || Integer.parseInt(friend)-1 < 0);
 
                             seeFriendsPlants(Integer.parseInt(friend)-1);
                         }
@@ -403,6 +409,10 @@ public class ICS4U_FP {
                             System.out.println("\nYou've been on Planstagram for too long! We're logging you out.");
                             stay = false;
                         }
+                    
+                        if(randomNumber(1,10)%2 == 0){
+                            randomPlanstagram();
+                        }
                     }
                 }
 
@@ -421,7 +431,10 @@ public class ICS4U_FP {
             myPlantList.dailyEvent(); //does a random daily event for every plant in the list
             rep += myPlantList.getDailyRep();
             myPlantList.removeDeadPlants(); //removes any dead plants from the list
-            myPlantList.writeFile("" + day);
+            if(!myPlantList.isEmpty()){
+                myPlantList.writeFile("" + day);
+            }
+
             day++;
 
             if(myPlantList.isEmpty() && rep < 5){ //game over
@@ -430,8 +443,50 @@ public class ICS4U_FP {
         }
 
         //goodbye message
-}
+    }
 
+    /*
+    *Random event occurs after every "action" on Planstagram.
+    */
+    private static void randomPlanstagram() {
+        int rando = randomNumber(1,10);
+        String [] rudeMessages = {" looks like its been neglected for a while. How are you even on Plantagram lolol", 
+                                " is crawling with pests, EWWWW", 
+                                " isn't looking too good",
+                                " should be thrown out.", 
+                                " is ugly."};
+
+        String [] niceMessages = {" looks amazing!!!!!!", 
+                                " looking super healthy :)", 
+                                " isn't infected anymore! doing great~", 
+                                " has grown alot! wow", 
+                                " is a beautiful addition! "};
+        
+        if(rando<=3){
+            System.out.println("\nOne of your friends added a new comment on your post. Hit enter to view the comment.");
+            input.nextLine();
+            System.out.println("\'nyour " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() 
+            + rudeMessages[randomNumber(0,4)] + "'\n-" + rando + " reputation.");
+            rep-=rando;
+        }
+
+        else if(rando == 5 || rando == 4 || rando == 6){ //random friend decides to gift the user a new plant!
+            generateRandomPlant(myPlantList);
+            System.out.println("\nOne of your friends decided to gift you a new plant!");
+            nameNewPlants();
+            rep+=rando;
+            System.out.println("+" + rando + " reputation.");
+        }
+
+        else if(rando>=7){
+            System.out.println("\nOne of your friends added a new comment on your post. Hit enter to view the comment.");
+            input.nextLine();
+            System.out.println("\'nyour " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() 
+            + niceMessages[randomNumber(0,4)] + "'\n+" + rando + " reputation.");
+            rep+=rando;
+        }
+
+    }
 
     public static void generateRandomPlant(LinkedList list){
         int sub = randomNumber(1, 3);
@@ -811,8 +866,7 @@ public class ICS4U_FP {
             br.close();
 
         } catch(IOException ex){ //catches failure in reading the file (e.g if it does not exist)
-            System.out.println("\nHmm. There seems to be a problem with reading from " + fileName + ".");
-            System.out.println("IOException: " + ex.getMessage());
+            System.out.println("\nIt appears that you did not own any plants on this day.");
             return;
         } 
     }

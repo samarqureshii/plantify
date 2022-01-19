@@ -442,7 +442,7 @@ public class LinkedList {
         }
 
         Node current = head;
-        String[][]arr = new String[size*2 + 1][6];
+        String[][]arr = new String[(size*2) + 1][6];
         arr[0][0] = "";
         arr[1][0] = "";
         arr[0][1] = "Name";
