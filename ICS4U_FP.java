@@ -11,12 +11,13 @@ import java.util.Scanner;
 public class ICS4U_FP {
 
     public static Scanner input = new Scanner(System.in);
-    public static LinkedList myPlantList = new LinkedList();
+    public static LinkedList myPlantList = new LinkedList(); //linked list where all the user's plants will be stored
     public static Random rand = new Random();
     public static final NumberFormat percent = NumberFormat.getPercentInstance();
-    public static int rep = 1000, day = 1;
+    public static int rep = 0, day = 1;
     public static boolean housePlantYes, treeYes, gardenYes;
-    public static ArrayList <LinkedList> friendList = new ArrayList();
+    public static ArrayList <LinkedList> friendList = new ArrayList(); //array list where all the plant lists of all the user's friends will be stored
+    //array of species that can be accessed throughout any method in the main
     public static String [] species = {"Cebu Blue", "Neon", "Manjula", "Marble Queen", "Golden", //pothos species
                                     "Brasil", "Pink Princess", "Florida Beauty", "Micans", "Gloriosum" //philodendron species
                                     , "Elastica", "Lyrata", "Benjamina", "Altissmia", "Audrey" //ficus species
@@ -36,19 +37,19 @@ public class ICS4U_FP {
     public static void main(String[]args){
         boolean flag = true;
 
-        //introMessage();
+        introMessage(); //allows user to select and name their initial plants, as well as explains the rules 
 
-        while(flag){
+        while(flag){ //as long as user still has plants
             String option = "";
             do{
                 String menuSelect = "Please select an option from the menu below";
                 System.out.print("\n\n" + line(menuSelect.length()) + "\n\n" + menuSelect + 
-                    "\n->1. Tend to a certain plant" + 
+                    "\n->1. Tend to a certain plant" + //user can water, rename, add info to, or do a special action
                     "\n->2. See all plants" + //from day ... in file ...
                     "\n->3. Show me plants by..." + //searching and sorting 
                     "\n->4. Buy new plant" +
                     "\n->5. Sell plant" + 
-                    "\n->6. Log into Planstagram" +
+                    "\n->6. Log into Planstagram" + //virtual plant
                     "\n->7. Abandon all plants" + 
                     "\nCurrent amount of reputation: " + rep + 
                     "\n\nChoice: ");
@@ -66,7 +67,7 @@ public class ICS4U_FP {
 
                     System.out.println(line(100) + "\n\n->>Current plant inventory:\n\n" + myPlantList.toString()); 
 
-                    if(!myPlantList.isEmpty()){
+                    if(!myPlantList.isEmpty()){ //user can only tend to a plant if their plant list has >=1 plant(s)
                         Plant plantToTend = null;
                         do{
                             System.out.println("\n->Enter the nickname of the plant you would like to tend to.");
@@ -91,6 +92,7 @@ public class ICS4U_FP {
                             if(op.equals("1")){ //water the plant
                                 int change = randomNumber(1,10);
                                 plantToTend.setWaterLevel(plantToTend.getWaterLevel() + randomNumber(5,40));
+                                //adds water and reputation to plant
                                 System.out.println("\nNicely done! " + plantToTend.getName() + " (" + plantToTend.getSpecies() 
                                 + " " + plantToTend.getGenus() + ") has been successfully watered." +
                                 "\nNew water level: " + percent.format((double)plantToTend.getWaterLevel()/100) + "\n+" + change + " reputation.");
@@ -149,9 +151,9 @@ public class ICS4U_FP {
                     System.out.println("\nWhich day would you like to see your plant collection from? " 
                     + "\n\nYou can only see files from before day " + day + ".");
                     dayNum = input.nextLine();
-                }while(invalidInt(dayNum) || dayNum == null);
+                }while(invalidInt(dayNum) || dayNum == null); //to ensure a file that exists can be read
            
-                if(Integer.parseInt(dayNum) < day && Integer.parseInt(dayNum) > 0){
+                if(Integer.parseInt(dayNum) < day && Integer.parseInt(dayNum) > 0){ // where the file actually exists and can be read
                     readFile("day" + dayNum + ".txt");
                 }
 
@@ -302,12 +304,22 @@ public class ICS4U_FP {
 
                     System.out.println("\nYou will be selling " + 
                     plantToSell.getName() + " (" + plantToSell.getSpecies() + " " + plantToSell.getGenus() 
-                            + ") for " + price + " reputation."
-                            + "\n\nHit enter to proceed with the transaction.");
-                    input.nextLine();
-                    myPlantList.remove(plantToSell);
-                    rep+=price;
-                    System.out.println("\nPlant successfully sold. New reputation: " + rep);
+                            + ") for " + price + " reputation.");
+
+                    String ipt = "";
+                    do{
+                        System.out.println("\nAre you sure you want to sell this plant? (yes/no)");
+                        ipt = input.nextLine();
+
+                    }while(!ipt.equalsIgnoreCase("yes") && !ipt.equalsIgnoreCase("no"));
+                    
+                    if(ipt.equalsIgnoreCase("yes")){
+                        System.out.println("\nHit enter to proceed with the transaction.");
+                        input.nextLine();
+                        myPlantList.remove(plantToSell);
+                        rep+=price;
+                        System.out.println("\nPlant successfully sold. New reputation: " + rep);
+                    }
                 }
 
                 else{
@@ -319,7 +331,7 @@ public class ICS4U_FP {
                 addToFriendList(randomNumber(4,8)); //adds 4-8 random friends everytime user logs in
                 boolean stay = true;
                 int actionCount = 0;
-                if(rep > 10){
+                if(rep > 10 || !myPlantList.isEmpty()){
                     System.out.println("\n\n" + line(100) + 
                     "\n\nWelcome to Planstagram, a virtual plant community where you can connect with others through the shared love of plants!" + 
                     "\n\nThe more friends you have, the more reputation you can gain! However, some 'friends' can say nasty things and lower your reputation!" 
@@ -417,36 +429,41 @@ public class ICS4U_FP {
                 }
 
                 else{
-                    System.out.println("\nYou have not gained enough reputation with your plants to access Planstagram." + 
-                    "\nCome back when you have more than 10 reputation.");
+                    System.out.println("\nYou have not gained enough reputation with your plants, to access Planstagram." + 
+                    "\nCome back when you have more than 10 reputation, and at least one plant.");
                 }
             }
             
-            if(option.equals("7")){
+            if(option.equals("7")){ //user wants to exit the program
                 flag = false;
             }
             
             System.out.println("\nHit enter to continue.\n" + line(100));
             input.nextLine();
+
             myPlantList.dailyEvent(); //does a random daily event for every plant in the list
-            rep += myPlantList.getDailyRep();
+            rep += myPlantList.getDailyRep(); //tallies up all the reputation from every plant and adds to the total
             myPlantList.removeDeadPlants(); //removes any dead plants from the list
-            if(!myPlantList.isEmpty()){
+            
+            if(!myPlantList.isEmpty()){ //will write to file as long as there are plants 
                 myPlantList.writeFile("" + day);
             }
 
-            day++;
+            day++; //used to keep track of files 
 
-            if(myPlantList.isEmpty() && rep < 5){ //game over
+            if(myPlantList.isEmpty() && rep < 5){ //program ends as user cannot buy any more plants and does not have any
+                System.out.println("\nYou have lost all your plants and do not have enough reputation to continue!");
                 flag = false;
             }
         }
 
-        //goodbye message
+        System.out.println("\n" + line(100) + "\n\nIts a shame to see you leave. We hope to see you again soon!");
     }
 
     /*
     *Random event occurs after every "action" on Planstagram.
+    *Pre: Nothing
+    *Post: Shows the user if anyone has commented on their posts, or if they have been gifted a plant
     */
     private static void randomPlanstagram() {
         int rando = randomNumber(1,10);
@@ -460,17 +477,17 @@ public class ICS4U_FP {
                                 " looking super healthy :)", 
                                 " isn't infected anymore! doing great~", 
                                 " has grown alot! wow", 
-                                " is a beautiful addition! "};
+                                " is a beautiful addition!"};
         
-        if(rando<=3){
+        if(rando<=4){ //negative comment left on post, lose reputation
             System.out.println("\nOne of your friends added a new comment on your post. Hit enter to view the comment.");
             input.nextLine();
-            System.out.println("\'nyour " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() 
+            System.out.println("\nyour " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() 
             + rudeMessages[randomNumber(0,4)] + "'\n-" + rando + " reputation.");
             rep-=rando;
         }
 
-        else if(rando == 5 || rando == 4 || rando == 6){ //random friend decides to gift the user a new plant!
+        else if(rando == 5 || rando == 6){ //random friend decides to gift the user a new plant!
             generateRandomPlant(myPlantList);
             System.out.println("\nOne of your friends decided to gift you a new plant!");
             nameNewPlants();
@@ -478,16 +495,21 @@ public class ICS4U_FP {
             System.out.println("+" + rando + " reputation.");
         }
 
-        else if(rando>=7){
+        else if(rando>=7){// positive comment left on post, gain reputation
             System.out.println("\nOne of your friends added a new comment on your post. Hit enter to view the comment.");
             input.nextLine();
-            System.out.println("\'nyour " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() 
+            System.out.println("\n'your " + myPlantList.getFront().getSpecies() + " " + myPlantList.getFront().getGenus() 
             + niceMessages[randomNumber(0,4)] + "'\n+" + rando + " reputation.");
             rep+=rando;
         }
 
     }
 
+    /*
+    * Generates any type of plant and adds it to the indicated linked list
+    *Pre: Takes in the LinkedList as parameter that the plant will be added to
+    *Post: Updates LinkedList with new Plant and its associated genus at the front of the list
+    */
     public static void generateRandomPlant(LinkedList list){
         int sub = randomNumber(1, 3);
         int genus = randomNumber(1, 5);
@@ -558,6 +580,11 @@ public class ICS4U_FP {
         }
     }
 
+    /*
+    * Generates any type of houseplant to be added to the front of the user's plant list
+    *Pre: nothing
+    *Post: Updates user's plant list with new houselant and its associated genus at the front of the list
+    */
     public static void generateHousePlant(){
         int genus = randomNumber(1, 5);
 
@@ -584,6 +611,11 @@ public class ICS4U_FP {
         nameNewPlants();
     }
 
+    /*
+    * Generates any type of Tree to be added to the front of the user's plant list
+    *Pre: nothing
+    *Post: Updates user's plant list with new tree and its associated genus at the front of the list
+    */
     public static void generateTree(){
         int genus = randomNumber(1,5);
         
@@ -606,6 +638,11 @@ public class ICS4U_FP {
         nameNewPlants();
     }
     
+    /*
+    * Generates any type of garden plant to be added to the front of the user's plant list
+    *Pre: nothing
+    *Post: Updates user's plant list with new garden plant and its associated genus at the front of the list
+    */
     public static void generateFruitVeg(){
         int genus = randomNumber(1,5);
 
@@ -631,6 +668,7 @@ public class ICS4U_FP {
     
         nameNewPlants();
     }
+    
     /*
     *Random number generator method
     *Pre: Takes in the minimum and maximum constraints
@@ -641,6 +679,11 @@ public class ICS4U_FP {
         return (min + rand.nextInt(Math.abs(max-min+1)));
     }
 
+    /*
+    *Generates any number of plants recursively and adds to front of user plant list, allows user to name each one
+    *Pre: number of plants to add to list
+    *Post: updated user plant list with new plants
+    */
     public static int generatePlants(int n){ //where n is the number of plants
         int i = 0;
         if(i == n){
@@ -655,7 +698,11 @@ public class ICS4U_FP {
         
     }
 
-    //method for generating and adding plants to any linked list 
+    /*
+    *Generates any number of plants recursively and adds to front of any plant list
+    *Pre: number of plants to add to list
+    *Post: updated plant list with new plants
+    */
     public static LinkedList generatePlants(int n, LinkedList list){ //where n is the number of plants
         for(int i = 0; i<n; i++){
             generateRandomPlant(list);
@@ -664,6 +711,7 @@ public class ICS4U_FP {
         return list;
     }
 
+    
     public static int addToFriendList(int n){ //where n is the number of lists
         int i = 0;
         if(i == n){
